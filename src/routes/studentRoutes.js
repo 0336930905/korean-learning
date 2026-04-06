@@ -24,27 +24,28 @@ const studentThematicVocabularyController = require('../controllers/studentThema
 const Invoice = require('../models/Invoice'); // Add this line with other imports
 const gradesController = require('../controllers/gradesController');
 
-// Create required directories
-const uploadsDir = path.join(__dirname, '../../uploads');
+// Create required directories (skip on read-only filesystems like Vercel)
+const isProduction = process.env.NODE_ENV === 'production';
+const uploadsBase = isProduction ? '/tmp' : path.join(__dirname, '../..');
+const uploadsDir = path.join(uploadsBase, 'uploads');
 const forumUploadsDir = path.join(uploadsDir, 'forum');
 
-if (!fs.existsSync(uploadsDir)){
-    fs.mkdirSync(uploadsDir);
-}
-if (!fs.existsSync(forumUploadsDir)){
-    fs.mkdirSync(forumUploadsDir);
-}
+try {
+    if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
+    if (!fs.existsSync(forumUploadsDir)) fs.mkdirSync(forumUploadsDir, { recursive: true });
+} catch (e) { /* ignore on read-only filesystem */ }
 
-// Create uploads directory if it doesn't exist
-const assignmentsUploadsDir = path.join(__dirname, '../../uploads/assignments');
-if (!fs.existsSync(assignmentsUploadsDir)) {
-    fs.mkdirSync(assignmentsUploadsDir, { recursive: true });
-}
+const assignmentsUploadsDir = path.join(uploadsDir, 'assignments');
+try {
+    if (!fs.existsSync(assignmentsUploadsDir)) fs.mkdirSync(assignmentsUploadsDir, { recursive: true });
+} catch (e) { /* ignore on read-only filesystem */ }
 
 // Configure multer for file uploads
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        cb(null, 'public/uploads/assignments');
+        const dir = isProduction ? '/tmp/uploads/assignments' : 'public/uploads/assignments';
+        try { if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true }); } catch(e) {}
+        cb(null, dir);
     },
     filename: (req, file, cb) => {
         const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
@@ -94,11 +95,9 @@ const forumUpload = multer({
     }
 });
 
-// Create upload directory if it doesn't exist
-const uploadDir = path.join(__dirname, '../../uploads/forum');
-if (!fs.existsSync(uploadDir)) {
-    fs.mkdirSync(uploadDir, { recursive: true });
-}
+// Upload directory for forum
+const uploadDir = isProduction ? '/tmp/uploads/forum' : path.join(__dirname, '../../uploads/forum');
+try { if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true }); } catch(e) {}
 
 // Configure multer storage
 const forumStorageUpdated = multer.diskStorage({
@@ -129,10 +128,8 @@ const forumUploadUpdated = multer({
 // Configure multer for profile image uploads
 const profileStorage = multer.diskStorage({
     destination: function (req, file, cb) {
-        const profileUploadsDir = path.join(__dirname, '../../public/uploads/profiles');
-        if (!fs.existsSync(profileUploadsDir)) {
-            fs.mkdirSync(profileUploadsDir, { recursive: true });
-        }
+        const profileUploadsDir = isProduction ? '/tmp/uploads/profiles' : path.join(__dirname, '../../public/uploads/profiles');
+        try { if (!fs.existsSync(profileUploadsDir)) fs.mkdirSync(profileUploadsDir, { recursive: true }); } catch(e) {}
         cb(null, profileUploadsDir);
     },
     filename: function (req, file, cb) {

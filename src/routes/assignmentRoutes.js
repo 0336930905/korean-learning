@@ -9,12 +9,11 @@ const Class = require('../models/class');
 const Submission = require('../models/submission');
 
 // Configure multer for file upload
+const isProduction = process.env.NODE_ENV === 'production';
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        const dir = 'uploads/assignments';
-        if (!fs.existsSync(dir)) {
-            fs.mkdirSync(dir, { recursive: true });
-        }
+        const dir = isProduction ? '/tmp/uploads/assignments' : 'uploads/assignments';
+        try { if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true }); } catch(e) {}
         cb(null, dir);
     },
     filename: (req, file, cb) => {

@@ -7,12 +7,11 @@ const { isTeacher } = require('../middleware/auth');
 const Material = require('../models/material');
 
 // Configure multer storage
+const isProduction = process.env.NODE_ENV === 'production';
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        const dir = 'public/uploads/materials';
-        if (!fs.existsSync(dir)) {
-            fs.mkdirSync(dir, { recursive: true });
-        }
+        const dir = isProduction ? '/tmp/uploads/materials' : 'public/uploads/materials';
+        try { if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true }); } catch(e) {}
         cb(null, dir);
     },
     filename: (req, file, cb) => {

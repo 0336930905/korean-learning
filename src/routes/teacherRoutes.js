@@ -36,9 +36,13 @@ const {
 } = require('../controllers/assignmentController');
 
 // Multer configuration
+const isProduction = process.env.NODE_ENV === 'production';
+
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-        cb(null, 'public/uploads/');
+        const dir = isProduction ? '/tmp/uploads' : 'public/uploads';
+        try { if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true }); } catch(e) {}
+        cb(null, dir);
     },
     filename: function (req, file, cb) {
         cb(null, Date.now() + '-' + file.originalname);
@@ -62,10 +66,8 @@ const upload = multer({
 // Configure multer for document uploads
 const documentStorage = multer.diskStorage({
     destination: function (req, file, cb) {
-        const dir = path.join(__dirname, '../../uploads/documents');
-        if (!fs.existsSync(dir)) {
-            fs.mkdirSync(dir, { recursive: true });
-        }
+        const dir = isProduction ? '/tmp/uploads/documents' : path.join(__dirname, '../../uploads/documents');
+        try { if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true }); } catch(e) {}
         cb(null, dir);
     },
     filename: function (req, file, cb) {
@@ -91,10 +93,8 @@ const documentUpload = multer({
 // Update or add these routes
 const materialStorage = multer.diskStorage({
     destination: (req, file, cb) => {
-        const dir = 'public/uploads/materials';
-        if (!fs.existsSync(dir)) {
-            fs.mkdirSync(dir, { recursive: true });
-        }
+        const dir = isProduction ? '/tmp/uploads/materials' : 'public/uploads/materials';
+        try { if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true }); } catch(e) {}
         cb(null, dir);
     },
     filename: (req, file, cb) => {
@@ -120,10 +120,8 @@ const materialUpload = multer({
 // Vocabulary storage and upload configuration
 const vocabularyStorage = multer.diskStorage({
     destination: function (req, file, cb) {
-        const uploadDir = path.join(__dirname, '../../public/uploads/vocabulary');
-        if (!fs.existsSync(uploadDir)) {
-            fs.mkdirSync(uploadDir, { recursive: true });
-        }
+        const uploadDir = isProduction ? '/tmp/uploads/vocabulary' : path.join(__dirname, '../../public/uploads/vocabulary');
+        try { if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true }); } catch(e) {}
         cb(null, uploadDir);
     },
     filename: function (req, file, cb) {
