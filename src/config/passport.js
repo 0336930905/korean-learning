@@ -9,7 +9,7 @@ passport.use(new GoogleStrategy({
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
     callbackURL: process.env.GOOGLE_CALLBACK_URL || 
         (process.env.NODE_ENV === 'production' 
-            ? "https://korean-learning-3d8vkxdfv-haos-projects-cc2e0b28.vercel.app/auth/google/callback"
+            ? "https://korean-learning-olx3gnbn2-haos-projects-cc2e0b28.vercel.app/auth/google/callback"
             : `http://localhost:${process.env.PORT || 3999}/auth/google/callback`)
   },
   async (accessToken, refreshToken, profile, done) => {
