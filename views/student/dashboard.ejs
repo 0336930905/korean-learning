@@ -1,0 +1,56 @@
+<%- include('../partials/header') %>
+<h2 class="mb-4"><i class="fas fa-user-graduate me-2 text-primary"></i>Student Dashboard</h2>
+<div class="row g-4 mb-4">
+  <div class="col-md-6">
+    <div class="card bg-primary text-white">
+      <div class="card-body d-flex justify-content-between align-items-center">
+        <div><h6>My Classes</h6><h2><%= stats.classes %></h2></div>
+        <i class="fas fa-chalkboard fa-2x opacity-75"></i>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="card bg-info text-white">
+      <div class="card-body d-flex justify-content-between align-items-center">
+        <div><h6>Unread Messages</h6><h2><%= stats.unreadMessages %></h2></div>
+        <i class="fas fa-envelope fa-2x opacity-75"></i>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="row g-4">
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-header"><i class="fas fa-chalkboard me-2"></i>My Classes</div>
+      <div class="card-body">
+        <% myClasses.forEach(cls => { %>
+        <div class="mb-3 p-3 border rounded">
+          <h6><%= cls.name %></h6>
+          <p class="mb-1 small text-muted"><i class="fas fa-book me-1"></i><%= cls.course ? cls.course.name : '' %></p>
+          <p class="mb-1 small"><i class="fas fa-chalkboard-teacher me-1"></i>Teacher: <%= cls.teacher ? cls.teacher.name : 'N/A' %></p>
+          <p class="mb-0 small"><i class="fas fa-calendar me-1"></i><%= cls.schedule || 'No schedule' %></p>
+        </div>
+        <% }) %>
+        <% if (myClasses.length === 0) { %><p class="text-muted">Not enrolled in any class</p><% } %>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-header"><i class="fas fa-tasks me-2"></i>Upcoming Assignments</div>
+      <div class="card-body">
+        <% assignments.forEach(a => { %>
+        <div class="mb-2 p-2 border rounded">
+          <strong><%= a.title %></strong>
+          <% if (a.dueDate) { %>
+          <span class="badge bg-warning ms-2"><%= new Date(a.dueDate).toLocaleDateString() %></span>
+          <% } %>
+          <p class="mb-0 small text-muted"><%= a.description %></p>
+        </div>
+        <% }) %>
+        <% if (assignments.length === 0) { %><p class="text-muted">No upcoming assignments</p><% } %>
+      </div>
+    </div>
+  </div>
+</div>
+<%- include('../partials/footer') %>

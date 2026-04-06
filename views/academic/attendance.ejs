@@ -1,0 +1,61 @@
+<%- include('../partials/header') %>
+<h2 class="mb-4"><i class="fas fa-clipboard-check me-2 text-primary"></i>Attendance</h2>
+<div class="row g-4">
+  <% classes.forEach(cls => { %>
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-header"><strong><%= cls.name %></strong> - <%= cls.course ? cls.course.name : '' %></div>
+      <div class="card-body">
+        <% if (cls.students.length === 0) { %>
+        <p class="text-muted">No students enrolled</p>
+        <% } else { %>
+        <form action="/academic/attendance" method="POST" class="attendance-form">
+          <input type="hidden" name="classId" value="<%= cls._id %>">
+          <div class="mb-3">
+            <label class="form-label">Date</label>
+            <input type="date" name="date" class="form-control" value="<%= new Date().toISOString().split('T')[0] %>" required>
+          </div>
+          <table class="table table-sm">
+            <thead><tr><th>Student</th><th>Status</th></tr></thead>
+            <tbody>
+              <% cls.students.forEach(student => { %>
+              <tr>
+                <td><%= student.name %></td>
+                <td>
+                  <select class="form-select form-select-sm attendance-status" data-student-id="<%= student._id %>">
+                    <option value="present">Present</option>
+                    <option value="absent">Absent</option>
+                    <option value="late">Late</option>
+                  </select>
+                </td>
+              </tr>
+              <% }) %>
+            </tbody>
+          </table>
+          <input type="hidden" name="records" class="records-input">
+          <button type="submit" class="btn btn-sm btn-primary">Save Attendance</button>
+        </form>
+        <% } %>
+      </div>
+    </div>
+  </div>
+  <% }) %>
+  <% if (classes.length === 0) { %>
+  <div class="col-12 text-center text-muted py-5">
+    <i class="fas fa-inbox fa-3x mb-3"></i>
+    <p>No classes assigned</p>
+  </div>
+  <% } %>
+</div>
+<script>
+document.querySelectorAll('.attendance-form').forEach(form => {
+  form.addEventListener('submit', function(e) {
+    const records = [];
+    this.querySelectorAll('.attendance-status').forEach(sel => {
+      records.push({ student: sel.dataset.studentId, status: sel.value });
+    });
+    this.querySelector('.records-input').value = JSON.stringify(records);
+  });
+});
+</script>
+<%- include('../partials/footer') %>

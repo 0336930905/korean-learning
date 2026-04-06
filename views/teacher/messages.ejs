@@ -1,0 +1,93 @@
+<%- include('../partials/header') %>
+<h2 class="mb-4"><i class="fas fa-envelope me-2 text-primary"></i>Messages</h2>
+<div class="row">
+  <div class="col-md-3">
+    <div class="card">
+      <div class="card-header">Students</div>
+      <div class="list-group list-group-flush" id="contactList">
+        <% students.forEach(s => { %>
+        <a href="#" class="list-group-item list-group-item-action contact-item" data-userid="<%= s._id %>" data-username="<%= s.name %>">
+          <i class="fas fa-user-graduate me-2"></i><%= s.name %>
+        </a>
+        <% }) %>
+        <% if (students.length === 0) { %><div class="list-group-item text-muted">No students</div><% } %>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-9">
+    <div class="card">
+      <div class="card-header" id="chatHeader">Select a student to start chatting</div>
+      <div class="card-body" style="height:400px;overflow-y:auto;" id="messageArea">
+        <% messages.forEach(m => { %>
+        <div class="mb-2 text-<%= m.sender._id.toString() === user._id.toString() ? 'end' : 'start' %>">
+          <span class="badge bg-<%= m.sender._id.toString() === user._id.toString() ? 'primary' : 'secondary' %> p-2">
+            <strong><%= m.sender.name %>:</strong> <%= m.content %>
+          </span>
+          <div class="small text-muted"><%= new Date(m.createdAt).toLocaleString() %></div>
+        </div>
+        <% }) %>
+      </div>
+      <div class="card-footer">
+        <div class="input-group">
+          <input type="text" id="messageInput" class="form-control" placeholder="Type a message..." disabled>
+          <button class="btn btn-primary" id="sendBtn" disabled><i class="fas fa-paper-plane"></i></button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+const currentUserId = '<%= user._id %>';
+const socket = io();
+socket.emit('join', currentUserId);
+let selectedUserId = null;
+
+document.querySelectorAll('.contact-item').forEach(item => {
+  item.addEventListener('click', function(e) {
+    e.preventDefault();
+    selectedUserId = this.dataset.userid;
+    document.getElementById('chatHeader').textContent = 'Chat with ' + this.dataset.username;
+    document.getElementById('messageInput').disabled = false;
+    document.getElementById('sendBtn').disabled = false;
+    document.querySelectorAll('.contact-item').forEach(i => i.classList.remove('active'));
+    this.classList.add('active');
+  });
+});
+
+document.getElementById('sendBtn').addEventListener('click', sendMessage);
+document.getElementById('messageInput').addEventListener('keypress', e => { if (e.key === 'Enter') sendMessage(); });
+
+function sendMessage() {
+  const content = document.getElementById('messageInput').value.trim();
+  if (!content || !selectedUserId) return;
+  socket.emit('sendMessage', { senderId: currentUserId, receiverId: selectedUserId, content });
+  document.getElementById('messageInput').value = '';
+}
+
+function appendMessage(area, align, badgeClass, senderName, content, createdAt) {
+  const wrapper = document.createElement('div');
+  wrapper.className = `mb-2 text-${align}`;
+  const badge = document.createElement('span');
+  badge.className = `badge bg-${badgeClass} p-2`;
+  const strong = document.createElement('strong');
+  strong.textContent = senderName + ': ';
+  badge.appendChild(strong);
+  badge.appendChild(document.createTextNode(content));
+  const time = document.createElement('div');
+  time.className = 'small text-muted';
+  time.textContent = new Date(createdAt).toLocaleString();
+  wrapper.appendChild(badge);
+  wrapper.appendChild(time);
+  area.appendChild(wrapper);
+  area.scrollTop = area.scrollHeight;
+}
+
+socket.on('messageSent', data => {
+  appendMessage(document.getElementById('messageArea'), 'end', 'primary', 'You', data.content, data.createdAt);
+});
+
+socket.on('receiveMessage', data => {
+  appendMessage(document.getElementById('messageArea'), 'start', 'secondary', data.sender.name, data.content, data.createdAt);
+});
+</script>
+<%- include('../partials/footer') %>
