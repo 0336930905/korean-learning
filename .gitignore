@@ -1,0 +1,22 @@
+node_modules/
+
+# env/secrets
+.env
+matkhua.md
+
+# runtime/generated
+coverage/
+public/uploads/
+uploads/
+
+# local editor
+.vscode/
+
+# archives
+*.zip
+
+# logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*

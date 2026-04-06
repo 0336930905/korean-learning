@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hướng dẫn sửa lỗi Google OAuth</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        .header {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+        }
+        .error-box {
+            background: #ff6b6b;
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+        .solution-box {
+            background: #51cf66;
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+        .step {
+            background: #f8f9fa;
+            border-left: 4px solid #4ecdc4;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        .step h3 {
+            color: #2c3e50;
+            margin-top: 0;
+        }
+        .code {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            margin: 10px 0;
+            overflow-x: auto;
+        }
+        .highlight {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+        .btn {
+            display: inline-block;
+            padding: 12px 24px;
+            background: #4ecdc4;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            margin: 10px 5px;
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+        .btn:hover {
+            background: #45b7aa;
+        }
+        .btn-danger {
+            background: #e74c3c;
+        }
+        .btn-danger:hover {
+            background: #c0392b;
+        }
+        .status {
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .status-success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .status-error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .image-placeholder {
+            background: #f1f3f4;
+            border: 2px dashed #dadce0;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            margin: 15px 0;
+            color: #5f6368;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔧 Sửa lỗi Google OAuth: redirect_uri_mismatch</h1>
+            <p>Hướng dẫn chi tiết để khắc phục lỗi đăng nhập Google</p>
+        </div>
+
+        <div class="error-box">
+            <h3>❌ Lỗi hiện tại:</h3>
+            <p><strong>Error 400: redirect_uri_mismatch</strong></p>
+            <p>Chi tiết: <code>redirect_uri=http://localhost:3997/auth/google/callback</code></p>
+            <p>Ứng dụng không tuân thủ chính sách OAuth 2.0 của Google</p>
+        </div>
+
+        <div class="solution-box">
+            <h3>✅ Giải pháp:</h3>
+            <p>Cần đăng ký URI chuyển hướng trong Google Cloud Console</p>
+            <p><strong>URI cần thêm: <code>http://localhost:3999/auth/google/callback</code></strong></p>
+        </div>
+
+        <div class="step">
+            <h3>Bước 1: Truy cập Google Cloud Console</h3>
+            <p>Mở trình duyệt và truy cập:</p>
+            <div class="code">https://console.cloud.google.com/</div>
+            <a href="https://console.cloud.google.com/" target="_blank" class="btn">Mở Google Cloud Console</a>
+        </div>
+
+        <div class="step">
+            <h3>Bước 2: Chọn Project</h3>
+            <p>Chọn project của bạn hoặc project chứa OAuth 2.0 credentials</p>
+            <div class="highlight">
+                <strong>💡 Gợi ý:</strong> Tìm project có tên liên quan đến ứng dụng học tiếng Hàn của bạn
+            </div>
+        </div>
+
+        <div class="step">
+            <h3>Bước 3: Vào APIs & Services → Credentials</h3>
+            <p>Trong menu bên trái:</p>
+            <ul>
+                <li>Nhấp vào "APIs & Services"</li>
+                <li>Chọn "Credentials"</li>
+            </ul>
+            <div class="image-placeholder">
+                📍 Menu: APIs & Services → Credentials
+            </div>
+        </div>
+
+        <div class="step">
+            <h3>Bước 4: Tìm OAuth 2.0 Client</h3>
+            <p>Tìm OAuth 2.0 Client ID có thông tin:</p>
+            <div class="code">
+Client ID: 875597054714-e1v4icg0gisrliunj1tt499f7n66lmke.apps.googleusercontent.com
+            </div>
+            <p>Nhấp vào tên Client ID để chỉnh sửa</p>
+        </div>
+
+        <div class="step">
+            <h3>Bước 5: Thêm Authorized redirect URIs</h3>
+            <p>Trong phần "Authorized redirect URIs", thêm URI sau:</p>
+            <div class="code">http://localhost:3999/auth/google/callback</div>
+            <div class="highlight">
+                <strong>⚠️ Quan trọng:</strong> 
+                <ul>
+                    <li>Đảm bảo port là <strong>3999</strong></li>
+                    <li>Không có dấu "/" ở cuối</li>
+                    <li>Sử dụng "http" chứ không phải "https" cho localhost</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="step">
+            <h3>Bước 6: Lưu thay đổi</h3>
+            <p>Nhấp nút "SAVE" để lưu cấu hình</p>
+            <div class="highlight">
+                <strong>⏱️ Lưu ý:</strong> Có thể mất 5-10 phút để thay đổi có hiệu lực
+            </div>
+        </div>
+
+        <div class="step">
+            <h3>Bước 7: Kiểm tra cấu hình server</h3>
+            <p>Đảm bảo server đang chạy trên port 3999:</p>
+            <div class="code">
+Port hiện tại: 3999
+Callback URL: http://localhost:3999/auth/google/callback
+            </div>
+            <div id="serverStatus" class="status status-error">
+                ⏳ Đang kiểm tra trạng thái server...
+            </div>
+        </div>
+
+        <div class="step">
+            <h3>Bước 8: Test đăng nhập</h3>
+            <p>Sau khi hoàn thành các bước trên:</p>
+            <a href="http://localhost:3999/login" target="_blank" class="btn">Test đăng nhập Google</a>
+            <a href="http://localhost:3999/auth/google" target="_blank" class="btn">Test Google OAuth trực tiếp</a>
+        </div>
+
+        <div class="highlight">
+            <h3>🔄 Tài khoản test backup (nếu Google OAuth vẫn lỗi):</h3>
+            <ul>
+                <li><strong>Admin:</strong> admin@test.com / admin123</li>
+                <li><strong>Teacher:</strong> teacher@test.com / teacher123</li>
+                <li><strong>Student:</strong> student@test.com / student123</li>
+            </ul>
+        </div>
+
+        <div id="troubleshooting" class="step">
+            <h3>🔍 Troubleshooting</h3>
+            <p><strong>Nếu vẫn gặp lỗi:</strong></p>
+            <ul>
+                <li>Xóa cache trình duyệt</li>
+                <li>Thử ở chế độ incognito</li>
+                <li>Kiểm tra lại URI trong Google Console</li>
+                <li>Đợi 10-15 phút sau khi lưu trong Google Console</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // Kiểm tra trạng thái server
+        function checkServerStatus() {
+            fetch('http://localhost:3999/login')
+                .then(response => {
+                    if (response.ok) {
+                        document.getElementById('serverStatus').innerHTML = '✅ Server đang chạy trên port 3999';
+                        document.getElementById('serverStatus').className = 'status status-success';
+                    }
+                })
+                .catch(error => {
+                    document.getElementById('serverStatus').innerHTML = '❌ Server không chạy hoặc không truy cập được port 3999';
+                    document.getElementById('serverStatus').className = 'status status-error';
+                });
+        }
+
+        // Kiểm tra khi trang load
+        window.onload = function() {
+            setTimeout(checkServerStatus, 2000);
+        };
+
+        // Copy URI function
+        function copyURI() {
+            navigator.clipboard.writeText('http://localhost:3999/auth/google/callback');
+            alert('Đã copy URI vào clipboard!');
+        }
+    </script>
+</body>
+</html>
