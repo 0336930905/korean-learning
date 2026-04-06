@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const bodyParser = require('body-parser');
 const session = require('express-session');
+const MongoStore = require('connect-mongo');
 const passport = require('passport');
 const multer = require('multer');
 const path = require('path');
@@ -40,7 +41,8 @@ const attendanceRoutes = require('./src/routes/attendanceRoutes');
 
 // Middleware kiểm tra role teacher
 const isTeacher = (req, res, next) => {
-    if (req.isAuthenticated() && req.user.role === 'teacher') {
+    const user = req.user || req.session.user;
+    if (user && user.role === 'teacher') {
         next();
     } else {
         res.redirect('/login');
@@ -122,8 +124,13 @@ app.use(session({
     secret: process.env.SESSION_SECRET || 'mysecretkey',
     resave: false,
     saveUninitialized: false,
+    store: MongoStore.create({
+        mongoUrl: process.env.MONGO_URI,
+        ttl: 24 * 60 * 60 // 1 ngày
+    }),
     cookie: {
         secure: process.env.NODE_ENV === 'production',
+        sameSite: process.env.NODE_ENV === 'production' ? 'lax' : false,
         maxAge: 24 * 60 * 60 * 1000 // 24 hours
     }
 }));
@@ -330,9 +337,12 @@ app.use(errorHandler);
 app.use('/account-management', accountManagementRoutes);
 
 app.get('/dashboard/admin', async (req, res) => {
-  if (!req.session.user || req.session.user.role !== 'admin') {
+  const currentUser = req.session.user || (req.user ? { id: req.user._id, email: req.user.email, fullName: req.user.fullName, role: req.user.role } : null);
+  if (!currentUser || currentUser.role !== 'admin') {
     return res.redirect('/login');
   }
+  // Sync session if came via passport
+  if (!req.session.user && req.user) req.session.user = currentUser;
   
   try {
     const User = require('./src/models/User');
@@ -383,13 +393,13 @@ app.get('/dashboard/admin', async (req, res) => {
     };
     
     res.render('dashboards/admin', { 
-      user: req.session.user, 
+      user: currentUser, 
       dashboardData 
     });
   } catch (error) {
     console.error('Error loading admin dashboard:', error);
     res.render('dashboards/admin', { 
-      user: req.session.user,
+      user: currentUser,
       dashboardData: {
         totalUsers: 406,
         totalCourses: 3,
@@ -452,9 +462,12 @@ app.get('/teacher/courses/new', isTeacher, async (req, res) => {
 });
 
 app.get('/dashboard/student', async (req, res) => {
-  if (!req.session.user || req.session.user.role !== 'student') {
+  const currentUser = req.session.user || (req.user ? { id: req.user._id, email: req.user.email, fullName: req.user.fullName, role: req.user.role } : null);
+  if (!currentUser || currentUser.role !== 'student') {
     return res.redirect('/login');
   }
+  // Sync session if came via passport
+  if (!req.session.user && req.user) req.session.user = currentUser;
 
   try {
     // Import required models
@@ -463,7 +476,7 @@ app.get('/dashboard/student', async (req, res) => {
     const Submission = require('./src/models/submission');
     const Course = require('./src/models/Course');
     
-    const studentId = req.session.user.id;
+    const studentId = currentUser.id;
     
     // Lấy thông tin chi tiết của student
     const student = await User.findById(studentId)
@@ -547,14 +560,14 @@ app.get('/dashboard/student', async (req, res) => {
     };
 
     res.render('dashboards/student', { 
-      user: req.session.user,
+      user: currentUser,
       dashboardData
     });
 
   } catch (error) {
     console.error('Error loading student dashboard:', error);
     res.render('dashboards/student', { 
-      user: req.session.user,
+      user: currentUser,
       dashboardData: null,
       error: 'Không thể tải dữ liệu dashboard'
     });
