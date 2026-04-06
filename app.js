@@ -55,7 +55,7 @@ app.set('views', path.join(__dirname, 'views'));
 const viewsPath = path.join(__dirname, 'views');
 const requiredDirs = ['student', 'teacher', 'admin', 'partials'];
 
-if (process.env.NODE_ENV !== 'production') {
+if (process.env.NODE_ENV !== 'production' && process.env.VERCEL !== '1') {
     requiredDirs.forEach(dir => {
         const dirPath = path.join(viewsPath, dir);
         try {
@@ -67,7 +67,7 @@ if (process.env.NODE_ENV !== 'production') {
 }
 
 // Create necessary directories if they don't exist (local dev only)
-if (process.env.NODE_ENV !== 'production') {
+if (process.env.NODE_ENV !== 'production' && process.env.VERCEL !== '1') {
     const directories = [
         'public',
         'public/uploads',
@@ -189,7 +189,7 @@ app.use(async (req, res, next) => {
 });
 
 // Start local server (not needed on Vercel)
-if (process.env.NODE_ENV !== 'production') {
+if (process.env.NODE_ENV !== 'production' && process.env.VERCEL !== '1') {
   connectDB().then(() => {
     const PORT = process.env.PORT || 5000;
     server.listen(PORT, () => console.log(`http://localhost:${PORT}`));

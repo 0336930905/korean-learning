@@ -24,8 +24,9 @@ const studentThematicVocabularyController = require('../controllers/studentThema
 const Invoice = require('../models/Invoice'); // Add this line with other imports
 const gradesController = require('../controllers/gradesController');
 
-// Create required directories (skip on read-only filesystems like Vercel)
-const isProduction = process.env.NODE_ENV === 'production';
+// Create required directories - always use try/catch for serverless compatibility
+// VERCEL=1 is set automatically by Vercel in all serverless functions
+const isProduction = process.env.NODE_ENV === 'production' || process.env.VERCEL === '1';
 const uploadsBase = isProduction ? '/tmp' : path.join(__dirname, '../..');
 const uploadsDir = path.join(uploadsBase, 'uploads');
 const forumUploadsDir = path.join(uploadsDir, 'forum');

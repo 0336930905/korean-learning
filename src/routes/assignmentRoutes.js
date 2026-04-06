@@ -9,7 +9,7 @@ const Class = require('../models/class');
 const Submission = require('../models/submission');
 
 // Configure multer for file upload
-const isProduction = process.env.NODE_ENV === 'production';
+const isProduction = process.env.NODE_ENV === 'production' || process.env.VERCEL === '1';
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
         const dir = isProduction ? '/tmp/uploads/assignments' : 'uploads/assignments';
