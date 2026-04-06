@@ -7,9 +7,10 @@ const bcrypt = require('bcryptjs'); // Add bcrypt for password hashing
 passport.use(new GoogleStrategy({
     clientID: process.env.GOOGLE_CLIENT_ID,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    callbackURL: process.env.NODE_ENV === 'production' 
-        ? "https://your-domain.com/auth/google/callback"
-        : `http://localhost:${process.env.PORT || 4000}/auth/google/callback`
+    callbackURL: process.env.GOOGLE_CALLBACK_URL || 
+        (process.env.NODE_ENV === 'production' 
+            ? "https://korean-learning-3d8vkxdfv-haos-projects-cc2e0b28.vercel.app/auth/google/callback"
+            : `http://localhost:${process.env.PORT || 3999}/auth/google/callback`)
   },
   async (accessToken, refreshToken, profile, done) => {
     try {
