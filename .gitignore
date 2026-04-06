@@ -12,6 +12,14 @@ uploads/
 # local editor
 .vscode/
 
+# personal / large assets (do not push)
+public/botuvung/
+*.exe
+*.apk
+*.pdf
+*.docx
+*.msi
+
 # archives
 *.zip
 
@@ -20,3 +28,6 @@ uploads/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# stray files
+{
