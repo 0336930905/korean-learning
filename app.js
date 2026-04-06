@@ -51,32 +51,40 @@ const isTeacher = (req, res, next) => {
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
-// Ensure views directory structure
+// Ensure views directory structure (local dev only)
 const viewsPath = path.join(__dirname, 'views');
 const requiredDirs = ['student', 'teacher', 'admin', 'partials'];
 
-requiredDirs.forEach(dir => {
-    const dirPath = path.join(viewsPath, dir);
-    if (!fs.existsSync(dirPath)) {
-        fs.mkdirSync(dirPath, { recursive: true });
-    }
-});
+if (process.env.NODE_ENV !== 'production') {
+    requiredDirs.forEach(dir => {
+        const dirPath = path.join(viewsPath, dir);
+        try {
+            if (!fs.existsSync(dirPath)) {
+                fs.mkdirSync(dirPath, { recursive: true });
+            }
+        } catch (e) { /* ignore in serverless */ }
+    });
+}
 
-// Create necessary directories if they don't exist
-const directories = [
-    'public',
-    'public/uploads',
-    'public/uploads/vocabulary',
-    'public/uploads/materials',
-    'public/images'
-];
+// Create necessary directories if they don't exist (local dev only)
+if (process.env.NODE_ENV !== 'production') {
+    const directories = [
+        'public',
+        'public/uploads',
+        'public/uploads/vocabulary',
+        'public/uploads/materials',
+        'public/images'
+    ];
 
-directories.forEach(dir => {
-    const fullPath = path.join(__dirname, dir);
-    if (!fs.existsSync(fullPath)) {
-        fs.mkdirSync(fullPath, { recursive: true });
-    }
-});
+    directories.forEach(dir => {
+        const fullPath = path.join(__dirname, dir);
+        try {
+            if (!fs.existsSync(fullPath)) {
+                fs.mkdirSync(fullPath, { recursive: true });
+            }
+        } catch (e) { /* ignore in serverless */ }
+    });
+}
 
 // Serve static files from public directory
 app.use(express.static(path.join(__dirname, 'public')));
@@ -156,21 +164,39 @@ const upload = multer({ storage: storage });
 
 const mongoURI = process.env.MONGO_URI;
 
-mongoose.connect(mongoURI, {
-  // Remove deprecated options
-  // useNewUrlParser: true,
-  // useUnifiedTopology: true,
-})
-.then(() => {
+// MongoDB connection caching for serverless (Vercel)
+let isConnected = false;
+async function connectDB() {
+  if (isConnected) return;
+  if (mongoose.connection.readyState >= 1) {
+    isConnected = true;
+    return;
+  }
+  await mongoose.connect(mongoURI);
+  isConnected = true;
   console.log('MongoDB connected...');
-  // Start the server only if the database connection is successful
-  const PORT = process.env.PORT || 5000;
-  server.listen(PORT, () => console.log(`http://localhost:${PORT}`));
-})
-.catch((err) => {
-  console.error('Failed to connect to the database', err);
-  process.exit(1); // Exit the process with failure
+}
+
+// Ensure DB is connected before every request
+app.use(async (req, res, next) => {
+  try {
+    await connectDB();
+    next();
+  } catch (err) {
+    console.error('Failed to connect to the database', err);
+    res.status(500).send('Database connection error');
+  }
 });
+
+// Start local server (not needed on Vercel)
+if (process.env.NODE_ENV !== 'production') {
+  connectDB().then(() => {
+    const PORT = process.env.PORT || 5000;
+    server.listen(PORT, () => console.log(`http://localhost:${PORT}`));
+  }).catch((err) => {
+    console.error('Failed to connect to the database', err);
+  });
+}
 
 const homeRoutes = require('./src/routes/homeRoutes');
 app.use('/', homeRoutes);
