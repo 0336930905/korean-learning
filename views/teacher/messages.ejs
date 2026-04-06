@@ -64,16 +64,30 @@ function sendMessage() {
   document.getElementById('messageInput').value = '';
 }
 
-socket.on('messageSent', data => {
-  const area = document.getElementById('messageArea');
-  area.innerHTML += `<div class="mb-2 text-end"><span class="badge bg-primary p-2"><strong>You:</strong> ${data.content}</span><div class="small text-muted">${new Date(data.createdAt).toLocaleString()}</div></div>`;
+function appendMessage(area, align, badgeClass, senderName, content, createdAt) {
+  const wrapper = document.createElement('div');
+  wrapper.className = `mb-2 text-${align}`;
+  const badge = document.createElement('span');
+  badge.className = `badge bg-${badgeClass} p-2`;
+  const strong = document.createElement('strong');
+  strong.textContent = senderName + ': ';
+  badge.appendChild(strong);
+  badge.appendChild(document.createTextNode(content));
+  const time = document.createElement('div');
+  time.className = 'small text-muted';
+  time.textContent = new Date(createdAt).toLocaleString();
+  wrapper.appendChild(badge);
+  wrapper.appendChild(time);
+  area.appendChild(wrapper);
   area.scrollTop = area.scrollHeight;
+}
+
+socket.on('messageSent', data => {
+  appendMessage(document.getElementById('messageArea'), 'end', 'primary', 'You', data.content, data.createdAt);
 });
 
 socket.on('receiveMessage', data => {
-  const area = document.getElementById('messageArea');
-  area.innerHTML += `<div class="mb-2 text-start"><span class="badge bg-secondary p-2"><strong>${data.sender.name}:</strong> ${data.content}</span><div class="small text-muted">${new Date(data.createdAt).toLocaleString()}</div></div>`;
-  area.scrollTop = area.scrollHeight;
+  appendMessage(document.getElementById('messageArea'), 'start', 'secondary', data.sender.name, data.content, data.createdAt);
 });
 </script>
 <%- include('../partials/footer') %>
