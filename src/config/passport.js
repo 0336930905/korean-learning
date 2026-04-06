@@ -8,9 +8,11 @@ passport.use(new GoogleStrategy({
     clientID: process.env.GOOGLE_CLIENT_ID,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
     callbackURL: process.env.GOOGLE_CALLBACK_URL || 
-        (process.env.NODE_ENV === 'production' 
-            ? "https://korean-learning-olx3gnbn2-haos-projects-cc2e0b28.vercel.app/auth/google/callback"
-            : `http://localhost:${process.env.PORT || 3999}/auth/google/callback`)
+        (process.env.VERCEL_PROJECT_PRODUCTION_URL
+            ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}/auth/google/callback`
+            : process.env.VERCEL_URL
+                ? `https://${process.env.VERCEL_URL}/auth/google/callback`
+                : `http://localhost:${process.env.PORT || 3999}/auth/google/callback`)
   },
   async (accessToken, refreshToken, profile, done) => {
     try {
