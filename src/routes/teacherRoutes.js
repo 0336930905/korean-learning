@@ -35,13 +35,21 @@ const {
     deleteAssignment
 } = require('../controllers/assignmentController');
 
-// Multer configuration
-const isProduction = process.env.NODE_ENV === 'production' || process.env.VERCEL === '1';
+// Detect writable upload base: use /tmp on Vercel/serverless (read-only fs)
+const uploadsBase = (() => {
+    try {
+        const testPath = path.join(__dirname, '../../uploads');
+        fs.mkdirSync(testPath, { recursive: true });
+        return path.join(__dirname, '../..');
+    } catch (e) {
+        return '/tmp';
+    }
+})();
 
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-        const dir = isProduction ? '/tmp/uploads' : 'public/uploads';
-        try { if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true }); } catch(e) {}
+        const dir = path.join(uploadsBase, 'uploads');
+        try { fs.mkdirSync(dir, { recursive: true }); } catch(e) {}
         cb(null, dir);
     },
     filename: function (req, file, cb) {
@@ -51,7 +59,7 @@ const storage = multer.diskStorage({
 
 const upload = multer({ 
     storage: storage,
-    limits: { fileSize: 30 * 1024 * 1024 }, // 30MB limit
+    limits: { fileSize: 30 * 1024 * 1024 },
     fileFilter: (req, file, cb) => {
         const allowedTypes = ['.pdf', '.doc', '.docx', '.mp3', '.wav', '.m4a', '.jpg', '.jpeg', '.png'];
         const ext = path.extname(file.originalname).toLowerCase();
@@ -66,8 +74,8 @@ const upload = multer({
 // Configure multer for document uploads
 const documentStorage = multer.diskStorage({
     destination: function (req, file, cb) {
-        const dir = isProduction ? '/tmp/uploads/documents' : path.join(__dirname, '../../uploads/documents');
-        try { if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true }); } catch(e) {}
+        const dir = path.join(uploadsBase, 'uploads/documents');
+        try { fs.mkdirSync(dir, { recursive: true }); } catch(e) {}
         cb(null, dir);
     },
     filename: function (req, file, cb) {
@@ -78,7 +86,7 @@ const documentStorage = multer.diskStorage({
 
 const documentUpload = multer({ 
     storage: documentStorage,
-    limits: { fileSize: 50 * 1024 * 1024 }, // 50MB limit for MP3 files
+    limits: { fileSize: 50 * 1024 * 1024 },
     fileFilter: (req, file, cb) => {
         const allowedTypes = ['.pdf', '.doc', '.docx', '.ppt', '.pptx', '.xls', '.xlsx', '.mp3', '.wav', '.m4a'];
         const ext = path.extname(file.originalname).toLowerCase();
@@ -93,8 +101,8 @@ const documentUpload = multer({
 // Update or add these routes
 const materialStorage = multer.diskStorage({
     destination: (req, file, cb) => {
-        const dir = isProduction ? '/tmp/uploads/materials' : 'public/uploads/materials';
-        try { if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true }); } catch(e) {}
+        const dir = path.join(uploadsBase, 'uploads/materials');
+        try { fs.mkdirSync(dir, { recursive: true }); } catch(e) {}
         cb(null, dir);
     },
     filename: (req, file, cb) => {
@@ -105,7 +113,7 @@ const materialStorage = multer.diskStorage({
 
 const materialUpload = multer({
     storage: materialStorage,
-    limits: { fileSize: 30 * 1024 * 1024 }, // 10MB limit
+    limits: { fileSize: 30 * 1024 * 1024 },
     fileFilter: (req, file, cb) => {
         const allowedTypes = ['.pdf', '.doc', '.docx', '.ppt', '.pptx', '.xls', '.xlsx'];
         const ext = path.extname(file.originalname).toLowerCase();
@@ -120,8 +128,8 @@ const materialUpload = multer({
 // Vocabulary storage and upload configuration
 const vocabularyStorage = multer.diskStorage({
     destination: function (req, file, cb) {
-        const uploadDir = isProduction ? '/tmp/uploads/vocabulary' : path.join(__dirname, '../../public/uploads/vocabulary');
-        try { if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true }); } catch(e) {}
+        const uploadDir = path.join(uploadsBase, 'uploads/vocabulary');
+        try { fs.mkdirSync(uploadDir, { recursive: true }); } catch(e) {}
         cb(null, uploadDir);
     },
     filename: function (req, file, cb) {

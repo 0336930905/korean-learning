@@ -5,12 +5,14 @@ const fs = require('fs');
 const mongoose = require('mongoose');
 
 // Configure multer for image upload
-const isProduction = process.env.NODE_ENV === 'production' || process.env.VERCEL === '1';
+const uploadsBase = (() => {
+    try { fs.mkdirSync(path.join(__dirname, '../../uploads'), { recursive: true }); return path.join(__dirname, '../..'); }
+    catch (e) { return '/tmp'; }
+})();
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-        const uploadDir = isProduction ? '/tmp/uploads/vocabulary' : path.join(__dirname, '../../public/uploads/vocabulary');
-        // Create directory if it doesn't exist
-        try { if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true }); } catch(e) {}
+        const uploadDir = path.join(uploadsBase, 'uploads/vocabulary');
+        try { fs.mkdirSync(uploadDir, { recursive: true }); } catch(e) {}
         cb(null, uploadDir);
     },
     filename: function (req, file, cb) {
